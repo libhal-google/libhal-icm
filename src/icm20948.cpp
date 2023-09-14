@@ -33,7 +33,7 @@ result<icm20948> icm20948::create(hal::i2c& p_i2c,
 
 hal::status icm20948::init()
 {
-  m_currentBank = 0;
+  m_current_bank = 0;
   reset_icm20948();
   if (HAL_CHECK(whoami()) != icm20948_who_am_i_content) {
     return hal::new_error();
@@ -90,13 +90,13 @@ hal::status icm20948::set_acc_offsets(float p_xmin,
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_offsets(float p_xOffset,
-                                      float p_yOffset,
-                                      float p_zOffset)
+hal::status icm20948::set_gyr_offsets(float p_x_offset,
+                                      float p_y_offset,
+                                      float p_z_offset)
 {
-  m_gyr_offset_val.x = p_xOffset;
-  m_gyr_offset_val.y = p_yOffset;
-  m_gyr_offset_val.z = p_zOffset;
+  m_gyr_offset_val.x = p_x_offset;
+  m_gyr_offset_val.y = p_y_offset;
+  m_gyr_offset_val.z = p_z_offset;
 
   return hal::success();
 }
@@ -406,9 +406,9 @@ hal::status icm20948::set_clock_auto_select()
 
 hal::status icm20948::switch_bank(hal::byte p_newBank)
 {
-  if (p_newBank != m_currentBank) {
-    m_currentBank = p_newBank;
-    m_currentBank = m_currentBank << 4;
+  if (p_newBank != m_current_bank) {
+    m_current_bank = p_newBank;
+    m_current_bank = m_current_bank << 4;
   }
   auto reg_buffer = HAL_CHECK(
     hal::write_then_read<1>(*m_i2c,
@@ -419,7 +419,7 @@ hal::status icm20948::switch_bank(hal::byte p_newBank)
   hal::byte reg_val = reg_buffer[0];
   HAL_CHECK(hal::write(*m_i2c,
                        m_address,
-                       std::array<hal::byte, 2>{ reg_val, m_currentBank },
+                       std::array<hal::byte, 2>{ reg_val, m_current_bank },
                        hal::never_timeout()));
 
   return hal::success();

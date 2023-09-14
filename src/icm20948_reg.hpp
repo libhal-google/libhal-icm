@@ -40,8 +40,10 @@ static constexpr hal::byte icm20948_int_status_2 = 0x1B;
 static constexpr hal::byte icm20948_int_status_3 = 0x1C;
 static constexpr hal::byte icm20948_delay_time_h = 0x28;
 static constexpr hal::byte icm20948_delay_time_l = 0x29;
-static constexpr hal::byte icm20948_accel_out = 0x2D;  // accel data registers begin
-static constexpr hal::byte icm20948_gyro_out = 0x33;  // gyro data registers begin
+static constexpr hal::byte icm20948_accel_out =
+  0x2D;  // accel data registers begin
+static constexpr hal::byte icm20948_gyro_out =
+  0x33;  // gyro data registers begin
 static constexpr hal::byte icm20948_temp_out = 0x39;
 static constexpr hal::byte icm20948_ext_slv_sens_data_00 = 0x3B;
 static constexpr hal::byte icm20948_ext_slv_sens_data_01 = 0x3C;
@@ -141,6 +143,5 @@ static constexpr hal::byte icm20948_who_am_i_content = 0xEA;
 static constexpr float icm20948_room_temp_offset = 0.0;
 static constexpr float icm20948_t_sensitivity = 333.87;
 static constexpr float ak09916_mag_lsb = 0.1495;
-
 
 }  // namespace hal::icm
