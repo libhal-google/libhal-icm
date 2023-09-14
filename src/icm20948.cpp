@@ -212,7 +212,7 @@ hal::status icm20948::set_temp_dlpf(icm20948_dlpf p_dlpf)
 hal::result<icm20948::accel_read_t> icm20948::read_acceleration()
 {
   std::array<hal::byte, 6> data{};
-  accel_read_t accel_read, accel_read_raw;
+  accel_read_t accel_read = { 0, 0, 0 }, accel_read_raw;
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<6>(*m_i2c,
@@ -241,7 +241,7 @@ hal::result<icm20948::accel_read_t> icm20948::read_acceleration()
 hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
 {
   std::array<hal::byte, 6> data{};
-  gyro_read_t gyro_read, gyro_read_raw;
+  gyro_read_t gyro_read = { 0, 0, 0 }, gyro_read_raw;
 
   switch_bank(0);
   data = HAL_CHECK(
@@ -442,7 +442,7 @@ hal::status icm20948::write_register16(hal::byte p_bank,
                                        int16_t p_val)
 {
   switch_bank(p_bank);
-  int8_t MSByte = static_cast<int8_t>((p_val >> 8) & 0xFF);
+  hal::byte MSByte = static_cast<int8_t>((p_val >> 8) & 0xFF);
   hal::byte LSByte = p_val & 0xFF;
 
   HAL_CHECK(hal::write(*m_i2c,

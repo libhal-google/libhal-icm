@@ -232,7 +232,6 @@ public:
 private:
   hal::i2c* m_i2c;
   hal::byte m_address;
-  hal::byte m_gscale = 0x00;
   hal::byte m_current_bank;
   accel_read_t m_acc_offset_val;
   accel_read_t m_acc_corr_factor;
