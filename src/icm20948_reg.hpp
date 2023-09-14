@@ -139,9 +139,6 @@ static constexpr hal::byte AK09916_16_BIT = 0x10;
 static constexpr hal::byte AK09916_OVF = 0x08;
 static constexpr hal::byte AK09916_READ = 0x80;
 
-/* Others */
-// static constexpr hal::byte AK09916_WHO_AM_I_1 = 0x48;
-// static constexpr hal::byte AK09916_WHO_AM_I_2 = 0x09;
 static constexpr uint16_t AK09916_WHO_AM_I_1 = 0x4809;
 static constexpr uint16_t AK09916_WHO_AM_I_2 = 0x0948;
 
