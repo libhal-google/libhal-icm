@@ -25,118 +25,118 @@ class icm20948
 
 public:
 
-typedef enum ICM20948_CYCLE
-  {
-    ICM20948_NO_CYCLE = 0x00,
-    ICM20948_GYR_CYCLE = 0x10,
-    ICM20948_ACC_CYCLE = 0x20,
-    ICM20948_ACC_GYR_CYCLE = 0x30,
-    ICM20948_ACC_GYR_I2C_MST_CYCLE = 0x70
-  } ICM20948_cycle;
+typedef enum icm20948_cycle
+{
+    icm20948_no_cycle = 0x00,
+    icm20948_gyr_cycle = 0x10,
+    icm20948_acc_cycle = 0x20,
+    icm20948_acc_gyr_cycle = 0x30,
+    icm20948_acc_gyr_i2c_mst_cycle = 0x70
+} icm20948_cycle;
 
-  typedef enum ICM20948_INT_PIN_POL
-  {
-    ICM20948_ACT_HIGH,
-    ICM20948_ACT_LOW
-  } ICM20948_intPinPol;
+typedef enum icm20948_int_pin_pol
+{
+    icm20948_act_high,
+    icm20948_act_low
+} icm20948_int_pin_pol;
 
-  typedef enum ICM20948_INT_TYPE
-  {
-    ICM20948_FSYNC_INT = 0x01,
-    ICM20948_WOM_INT = 0x02,
-    ICM20948_DMP_INT = 0x04,
-    ICM20948_DATA_READY_INT = 0x08,
-    ICM20948_FIFO_OVF_INT = 0x10,
-    ICM20948_FIFO_WM_INT = 0x20
-  } ICM20948_intType;
+typedef enum icm20948_int_type
+{
+    icm20948_fsync_int = 0x01,
+    icm20948_wom_int = 0x02,
+    icm20948_dmp_int = 0x04,
+    icm20948_data_ready_int = 0x08,
+    icm20948_fifo_ovf_int = 0x10,
+    icm20948_fifo_wm_int = 0x20
+} icm20948_int_type;
 
-  typedef enum ICM20948_FIFO_TYPE
-  {
-    ICM20948_FIFO_ACC = 0x10,
-    ICM20948_FIFO_GYR = 0x0E,
-    ICM20948_FIFO_ACC_GYR = 0x1E
-  } ICM20948_fifoType;
+typedef enum icm20948_fifo_type
+{
+    icm20948_fifo_acc = 0x10,
+    icm20948_fifo_gyr = 0x0E,
+    icm20948_fifo_acc_gyr = 0x1E
+} icm20948_fifo_type;
 
-  typedef enum ICM20948_FIFO_MODE_CHOICE
-  {
-    ICM20948_CONTINUOUS,
-    ICM20948_STOP_WHEN_FULL
-  } ICM20948_fifoMode;
+typedef enum icm20948_fifo_mode_choice
+{
+    icm20948_continuous,
+    icm20948_stop_when_full
+} icm20948_fifo_mode_choice;
 
-  typedef enum ICM20948_GYRO_RANGE
-  {
-    ICM20948_GYRO_RANGE_250,
-    ICM20948_GYRO_RANGE_500,
-    ICM20948_GYRO_RANGE_1000,
-    ICM20948_GYRO_RANGE_2000
-  } ICM20948_gyroRange;
+typedef enum icm20948_gyro_range
+{
+    icm20948_gyro_range_250,
+    icm20948_gyro_range_500,
+    icm20948_gyro_range_1000,
+    icm20948_gyro_range_2000
+} icm20948_gyro_range;
 
-  typedef enum ICM20948_DLPF
-  {
-    ICM20948_DLPF_0,
-    ICM20948_DLPF_1,
-    ICM20948_DLPF_2,
-    ICM20948_DLPF_3,
-    ICM20948_DLPF_4,
-    ICM20948_DLPF_5,
-    ICM20948_DLPF_6,
-    ICM20948_DLPF_7,
-    ICM20948_DLPF_OFF
-  } ICM20948_dlpf;
+typedef enum icm20948_dlpf
+{
+    icm20948_dlpf_0,
+    icm20948_dlpf_1,
+    icm20948_dlpf_2,
+    icm20948_dlpf_3,
+    icm20948_dlpf_4,
+    icm20948_dlpf_5,
+    icm20948_dlpf_6,
+    icm20948_dlpf_7,
+    icm20948_dlpf_off
+} icm20948_dlpf;
 
-  typedef enum ICM20948_GYRO_AVG_LOW_PWR
-  {
-    ICM20948_GYR_AVG_1,
-    ICM20948_GYR_AVG_2,
-    ICM20948_GYR_AVG_4,
-    ICM20948_GYR_AVG_8,
-    ICM20948_GYR_AVG_16,
-    ICM20948_GYR_AVG_32,
-    ICM20948_GYR_AVG_64,
-    ICM20948_GYR_AVG_128
-  } ICM20948_gyroAvgLowPower;
+typedef enum icm20948_gyro_avg_low_pwr
+{
+    icm20948_gyr_avg_1,
+    icm20948_gyr_avg_2,
+    icm20948_gyr_avg_4,
+    icm20948_gyr_avg_8,
+    icm20948_gyr_avg_16,
+    icm20948_gyr_avg_32,
+    icm20948_gyr_avg_64,
+    icm20948_gyr_avg_128
+} icm20948_gyro_avg_low_pwr;
 
-  typedef enum ICM20948_ACC_RANGE
-  {
-    ICM20948_ACC_RANGE_2G,
-    ICM20948_ACC_RANGE_4G,
-    ICM20948_ACC_RANGE_8G,
-    ICM20948_ACC_RANGE_16G
-  } ICM20948_accRange;
+typedef enum icm20948_acc_range
+{
+    icm20948_acc_range_2g,
+    icm20948_acc_range_4g,
+    icm20948_acc_range_8g,
+    icm20948_acc_range_16g
+} icm20948_acc_range;
 
-  typedef enum ICM20948_ACC_AVG_LOW_PWR
-  {
-    ICM20948_ACC_AVG_4,
-    ICM20948_ACC_AVG_8,
-    ICM20948_ACC_AVG_16,
-    ICM20948_ACC_AVG_32
-  } ICM20948_accAvgLowPower;
+typedef enum icm20948_acc_avg_low_pwr
+{
+    icm20948_acc_avg_4,
+    icm20948_acc_avg_8,
+    icm20948_acc_avg_16,
+    icm20948_acc_avg_32
+} icm20948_acc_avg_low_pwr;
 
-  typedef enum ICM20948_WOM_COMP
-  {
-    ICM20948_WOM_COMP_DISABLE,
-    ICM20948_WOM_COMP_ENABLE
-  } ICM20948_womCompEn;
+typedef enum icm20948_wom_comp
+{
+    icm20948_wom_comp_disable,
+    icm20948_wom_comp_enable
+} icm20948_wom_comp;
 
-  typedef enum AK09916_OP_MODE
-  {
-    AK09916_PWR_DOWN = 0x00,
-    AK09916_TRIGGER_MODE = 0x01,
-    AK09916_CONT_MODE_10HZ = 0x02,
-    AK09916_CONT_MODE_20HZ = 0x04,
-    AK09916_CONT_MODE_50HZ = 0x06,
-    AK09916_CONT_MODE_100HZ = 0x08
-  } AK09916_opMode;
+typedef enum ak09916_op_mode
+{
+    ak09916_pwr_down = 0x00,
+    ak09916_trigger_mode = 0x01,
+    ak09916_cont_mode_10hz = 0x02,
+    ak09916_cont_mode_20hz = 0x04,
+    ak09916_cont_mode_50hz = 0x06,
+    ak09916_cont_mode_100hz = 0x08
+} ak09916_op_mode;
 
-  typedef enum ICM20948_ORIENTATION
-  {
-    ICM20948_FLAT,
-    ICM20948_FLAT_1,
-    ICM20948_XY,
-    ICM20948_XY_1,
-    ICM20948_YX,
-    ICM20948_YX_1
-  } ICM20948_orientation;
+typedef enum icm20948_orientation
+{
+    icm20948_flat,
+    icm20948_flat_1,
+    icm20948_xy,
+    icm20948_xy_1,
+    icm20948_yx,
+    icm20948_yx_1
+} icm20948_orientation;
 
 
 
@@ -209,27 +209,27 @@ typedef enum ICM20948_CYCLE
   hal::status set_gyr_offsets(float p_xOffset, float p_yOffset, float p_zOffset);
   hal::result<hal::byte> whoami();
 
-  hal::status enable_acc(bool p_enAcc);
-  hal::status set_acc_range(ICM20948_accRange p_accRange);
-  hal::status set_acc_DLPF(ICM20948_dlpf p_dlpf);
-  hal::status set_acc_sample_rate_div(uint16_t p_accSplRateDiv);
+  hal::status enable_acc(bool p_en_acc);
+  hal::status set_acc_range(icm20948_acc_range p_acc_range);
+  hal::status set_acc_dlpf(icm20948_dlpf p_dlpf);
+  hal::status set_acc_sample_rate_div(uint16_t p_acc_spl_rate_div);
   hal::status enable_gyr(bool p_enGyr);
-  hal::status set_gyr_range(ICM20948_gyroRange gyroRange);
-  hal::status set_gyr_DLPF(ICM20948_dlpf p_dlpf);
-  hal::status set_gyr_sample_rate_div(hal::byte p_gyrSplRateDiv);
-  hal::status set_temp_DLPF(ICM20948_dlpf p_dlpf);
+  hal::status set_gyr_range(icm20948_gyro_range gyroRange);
+  hal::status set_gyr_dlpf(icm20948_dlpf p_dlpf);
+  hal::status set_gyr_sample_rate_div(hal::byte p_gyr_spl_rate_div);
+  hal::status set_temp_dlpf(icm20948_dlpf p_dlpf);
 
   /* Power, Sleep, Standby */
-  hal::status enable_cycle(ICM20948_cycle p_cycle);
+  hal::status enable_cycle(icm20948_cycle p_cycle);
   hal::status enable_low_power(bool p_enLP);
-  hal::status set_gyr_Averg_cycle_mode(ICM20948_gyroAvgLowPower p_avg);
-  hal::status set_acc_Averg_cycle_mode(ICM20948_accAvgLowPower p_avg);
+  hal::status set_gyr_averg_cycle_mode(icm20948_gyro_avg_low_pwr p_avg);
+  hal::status set_acc_averg_cycle_mode(icm20948_acc_avg_low_pwr p_avg);
   hal::status sleep(bool p_sleep);
 
   /* Magnetometer */
   hal::status init_mag();
   [[nodiscard]] hal::result<hal::byte> whoami_mag();
-  void set_mag_op_mode(AK09916_opMode p_opMode);
+  void set_mag_op_mode(ak09916_op_mode p_op_mode);
   void reset_mag();
 
 private:
@@ -237,12 +237,12 @@ private:
   hal::byte m_address;
   hal::byte m_gscale = 0x00;
   hal::byte m_currentBank;
-  accel_read_t m_accOffsetVal;
-  accel_read_t m_accCorrFactor;
-  gyro_read_t m_gyrOffsetVal;
-  hal::byte m_accRangeFactor;
-  hal::byte m_gyrRangeFactor;
-  hal::byte m_regVal;  // intermediate storage of register values
+  accel_read_t m_acc_offset_val;
+  accel_read_t m_acc_corr_factor;
+  gyro_read_t m_gyr_offset_val;
+  hal::byte m_acc_range_factor;
+  hal::byte m_gyr_range_factor;
+  hal::byte m_reg_val;  // intermediate storage of register values
 
   explicit icm20948(hal::i2c& p_i2c, hal::byte p_device_address)
     : m_i2c(&p_i2c)
@@ -258,9 +258,9 @@ private:
   [[nodiscard]] hal::result<hal::byte> read_register8(hal::byte p_bank, hal::byte p_reg);
   [[nodiscard]] hal::result<hal::byte> read_register16(hal::byte p_bank, hal::byte p_reg);
 
-  hal::status write_AK09916_register8(hal::byte reg, hal::byte p_val);
-  [[nodiscard]] hal::result<hal::byte> read_AK09916_register8(hal::byte p_reg);
-  [[nodiscard]] hal::result<int16_t> read_AK09916_register16(hal::byte p_reg);
+  hal::status write_ak09916_register8(hal::byte reg, hal::byte p_val);
+  [[nodiscard]] hal::result<hal::byte> read_ak09916_register8(hal::byte p_reg);
+  [[nodiscard]] hal::result<int16_t> read_ak09916_register16(hal::byte p_reg);
 
   hal::status reset_icm20948();
   hal::status enable_i2c_host();
