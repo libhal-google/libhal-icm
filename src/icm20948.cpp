@@ -68,7 +68,7 @@ hal::status icm20948::auto_offsets()
   set_acc_dlpf(icm20948_dlpf_6);
   set_temp_dlpf(icm20948_dlpf_6);
 
-  set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
+  // set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
 
   return hal::success();
 }
@@ -265,23 +265,42 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   return gyro_read;
 }
 
-hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
-{
-  // read_ak09916_register16(icm20948_ext_slv_sens_data_00);
-  std::array<hal::byte, 6> data{};
-  int16_t x, y, z;
+hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() { 
   mag_read_t mag_read;
 
-  switch_bank(0);
-  data = HAL_CHECK(hal::write_then_read<6>(
-    *m_i2c,
-    m_address,
-    std::array<hal::byte, 1>{ icm20948_ext_slv_sens_data_00 },
-    hal::never_timeout()));
+// while (true) {
+//   auto status = HAL_CHECK(hal::write_then_read<1>(
+//     *m_i2c, 
+//     ak09916_address, 
+//     std::array<hal::byte, 1>{ ak09916_status_1 }, 
+//     hal::never_timeout()
+//   ));
 
-  x = static_cast<int16_t>((data[0]) << 8) | data[1];
-  y = static_cast<int16_t>((data[2]) << 8) | data[3];
-  z = static_cast<int16_t>((data[4]) << 8) | data[5];
+//   if (!(status[0] & 0x01)) {  // Check if data ready bit is set
+//       continue;
+//   }else{
+//     break;
+//   }
+// }
+
+      // Optional: Read back the control register to confirm the mode
+      enable_bypass_mode();
+  HAL_CHECK(hal::write(*m_i2c,
+                      ak09916_address,
+                      std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
+                      hal::never_timeout()));
+
+  // Read Mag Data
+  auto data = HAL_CHECK(hal::write_then_read<6>(
+      *m_i2c, 
+      ak09916_address, 
+      std::array<hal::byte, 1>{ ak09916_hxl }, 
+      hal::never_timeout()
+  ));
+
+  int16_t x = static_cast<int16_t>((data[0] << 8) | data[1]);
+  int16_t y = static_cast<int16_t>((data[2] << 8) | data[3]);
+  int16_t z = static_cast<int16_t>((data[4] << 8) | data[5]);
 
   mag_read.x = x * ak09916_mag_lsb;
   mag_read.y = y * ak09916_mag_lsb;
@@ -359,25 +378,85 @@ hal::status icm20948::sleep(bool p_sleep)
 
 hal::status icm20948::init_mag()
 {
-  enable_i2c_host();
-  reset_mag();
-  // reset_icm20948();
-  // sleep(false);
-  // write_register8(2, ICM20948_ODR_ALIGN_EN, 1);  // aligns ODR
-  enable_i2c_host();
+  
+  enable_bypass_mode();
+  set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
 
-  // auto whoAmI = HAL_CHECK(whoami_mag());
-  // if (!((whoAmI == AK09916_WHO_AM_I_1) || (whoAmI == AK09916_WHO_AM_I_2))) {
-  //   return hal::new_error();
-  // }
+  HAL_CHECK(hal::write(*m_i2c,
+                      ak09916_address,
+                      std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
+                      hal::never_timeout()));
+  
+  return hal::success();
+}
+
+
+//reset mag
+hal::status icm20948::reset_mag(){
+  enable_bypass_mode();
+  HAL_CHECK(hal::write(*m_i2c,
+                    ak09916_address,
+                    std::array<hal::byte, 2>{ ak09916_cntl_3, 0x01 }, // Soft Reset
+                    hal::never_timeout()));
 
   return hal::success();
 }
 
-hal::result<hal::byte> icm20948::whoami_mag()
-{
-  return HAL_CHECK(read_ak09916_register16(ak09916_wia_2));
+hal::result<hal::byte> icm20948::check_mag_mode(){
+enable_bypass_mode();
+    auto mode = HAL_CHECK(hal::write_then_read<1>(*m_i2c, 
+                                                  ak09916_address, 
+                                                  std::array<hal::byte, 1>{ ak09916_cntl_2 }, 
+                                                  hal::never_timeout()));
+    // if (mode[0] != ak09916_cont_mode_20hz) {
+    //     return hal::new_error();  // Or handle accordingly
+    // }
+  return mode[0];
 }
+
+// set mag status
+
+
+//read mag status
+hal::result<hal::byte> icm20948::mag_status(){
+  auto status = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_status_1 }, 
+    hal::never_timeout()
+  ));
+
+  return status[0];
+}
+
+hal::result<hal::byte> icm20948::whoami_ak09916_wia1_direct()
+{
+  auto result = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_wia_1 }, 
+    hal::never_timeout()
+  ));
+  return result[0];
+}
+
+hal::result<hal::byte> icm20948::whoami_ak09916_wia2_direct()
+{
+  auto result = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c, 
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_wia_2 }, 
+    hal::never_timeout()
+  ));
+  return result[0];
+}
+
+
+
+// hal::result<hal::byte> icm20948::whoami_mag()
+// {
+//   return HAL_CHECK(read_ak09916_register16(ak09916_wia_2));
+// }
 
 void icm20948::set_mag_op_mode(ak09916_op_mode p_op_mode)
 {
@@ -387,10 +466,10 @@ void icm20948::set_mag_op_mode(ak09916_op_mode p_op_mode)
   }
 }
 
-void icm20948::reset_mag()
-{
-  write_ak09916_register8(ak09916_cntl_3, 0x01);
-}
+// void icm20948::reset_mag()
+// {
+//   write_ak09916_register8(ak09916_cntl_3, 0x01);
+// }
 
 /************************************************
      Private Functions
@@ -532,6 +611,20 @@ hal::status icm20948::enable_i2c_host()
 
   return hal::success();
 }
+
+
+hal::status icm20948::enable_bypass_mode()
+{
+  HAL_CHECK(write_register8(0, icm20948_int_pin_cfg, icm20948_bypass_en));
+
+  return hal::success();
+}
+
+hal::result<hal::byte> icm20948::read_ak09916_status1()
+{
+    return read_ak09916_register8(ak09916_status_1);
+}
+
 
 hal::status icm20948::enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes)
 {
