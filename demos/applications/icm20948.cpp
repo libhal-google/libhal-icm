@@ -16,6 +16,18 @@
 #include <libhal-icm/icm20948.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
+#include <cmath>
+
+#define M_PI 3.14159265358979323846
+
+float computeHeading(float x, float y) {
+    float angle = atan2(y, x) * (180.0 / M_PI);  // Convert from radians to degrees
+    if (angle < 0) {
+        angle += 360;
+    }
+    return angle;
+}
+
 
 hal::status application(hardware_map& p_map)
 {
@@ -70,6 +82,10 @@ hal::status application(hardware_map& p_map)
                     mag.x,
                     mag.y,
                     mag.z);
+
+
+    hal::print<128>(console, "\n\nHeading: %f°", computeHeading(mag.x, mag.y));
+
 
     hal::print(console, "\n\n===========================================\n");
   }
