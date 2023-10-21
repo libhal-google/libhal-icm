@@ -36,7 +36,7 @@ hal::status icm20948::init()
   m_current_bank = 0;
   reset_icm20948();
   if (HAL_CHECK(whoami()) != icm20948_who_am_i_content) {
-    return hal::new_error();
+    return hal::new_error(std::errc::no_such_device);
   }
 
   m_acc_offset_val.x = 0.0;
@@ -46,10 +46,10 @@ hal::status icm20948::init()
   m_acc_corr_factor.y = 1.0;
   m_acc_corr_factor.z = 1.0;
   m_acc_range_factor = 1.0;
-  m_gyr_offset_val.x = 0.0;
-  m_gyr_offset_val.y = 0.0;
-  m_gyr_offset_val.z = 0.0;
-  m_gyr_range_factor = 1.0;
+  m_gyro_offset_val.x = 0.0;
+  m_gyro_offset_val.y = 0.0;
+  m_gyro_offset_val.z = 0.0;
+  m_gyro_range_factor = 1.0;
 
   sleep(false);
   enable_acc(true);
@@ -62,8 +62,8 @@ hal::status icm20948::init()
 hal::status icm20948::auto_offsets()
 {
 
-  set_gyr_dlpf(icm20948_dlpf_6);           // lowest noise
-  set_gyr_range(icm20948_gyro_range_250);  // highest resolution
+  set_gyro_dlpf(icm20948_dlpf_6);           // lowest noise
+  set_gyro_range(icm20948_gyro_range_250);  // highest resolution
   set_acc_range(icm20948_acc_range_2g);
   set_acc_dlpf(icm20948_dlpf_6);
   set_temp_dlpf(icm20948_dlpf_6);
@@ -90,13 +90,13 @@ hal::status icm20948::set_acc_offsets(float p_xmin,
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_offsets(float p_x_offset,
+hal::status icm20948::set_gyro_offsets(float p_x_offset,
                                       float p_y_offset,
                                       float p_z_offset)
 {
-  m_gyr_offset_val.x = p_x_offset;
-  m_gyr_offset_val.y = p_y_offset;
-  m_gyr_offset_val.z = p_z_offset;
+  m_gyro_offset_val.x = p_x_offset;
+  m_gyro_offset_val.y = p_y_offset;
+  m_gyro_offset_val.z = p_z_offset;
 
   return hal::success();
 }
@@ -160,26 +160,26 @@ hal::status icm20948::enable_gyr(bool p_enGyr)
 {
   m_reg_val = HAL_CHECK(read_register8(0, icm20948_pwr_mgmt_2));
   if (p_enGyr) {
-    m_reg_val &= ~icm20948_gyr_en;
+    m_reg_val &= ~icm20948_gyro_en;
   } else {
-    m_reg_val |= icm20948_gyr_en;
+    m_reg_val |= icm20948_gyro_en;
   }
   HAL_CHECK(write_register8(0, icm20948_pwr_mgmt_2, m_reg_val));
 
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_range(icm20948_gyro_range p_gyro_range)
+hal::status icm20948::set_gyro_range(icm20948_gyro_range p_gyro_range)
 {
   m_reg_val = HAL_CHECK(read_register8(2, icm20948_gyro_config_1));
   m_reg_val &= ~(0x06);
-  m_reg_val |= (p_gyro_range << 1);
+  m_reg_val |= (static_cast<hal::byte>(p_gyro_range) << 1);
   HAL_CHECK(write_register8(2, icm20948_gyro_config_1, m_reg_val));
 
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_dlpf(icm20948_dlpf p_dlpf)
+hal::status icm20948::set_gyro_dlpf(icm20948_dlpf p_dlpf)
 {
   m_reg_val = HAL_CHECK(read_register8(2, icm20948_gyro_config_1));
 
@@ -197,9 +197,9 @@ hal::status icm20948::set_gyr_dlpf(icm20948_dlpf p_dlpf)
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_sample_rate_div(hal::byte p_gyr_spl_rate_div)
+hal::status icm20948::set_gyro_sample_rate_div(hal::byte p_gyro_spl_rate_div)
 {
-  HAL_CHECK(write_register8(2, icm20948_gyro_smplrt_div, p_gyr_spl_rate_div));
+  HAL_CHECK(write_register8(2, icm20948_gyro_smplrt_div, p_gyro_spl_rate_div));
   return hal::success();
 }
 
@@ -254,13 +254,13 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   gyro_read_raw.y = static_cast<int16_t>(((data[2]) << 8) | data[3]) * 1.0;
   gyro_read_raw.z = static_cast<int16_t>(((data[4]) << 8) | data[5]) * 1.0;
 
-  gyro_read.x -= (m_gyr_offset_val.x / m_gyr_range_factor);
-  gyro_read.y -= (m_gyr_offset_val.y / m_gyr_range_factor);
-  gyro_read.z -= (m_gyr_offset_val.z / m_gyr_range_factor);
+  gyro_read.x -= (m_gyro_offset_val.x / m_gyro_range_factor);
+  gyro_read.y -= (m_gyro_offset_val.y / m_gyro_range_factor);
+  gyro_read.z -= (m_gyro_offset_val.z / m_gyro_range_factor);
 
-  gyro_read.x = gyro_read_raw.x * m_gyr_range_factor * 250.0 / 32768.0;
-  gyro_read.y = gyro_read_raw.y * m_gyr_range_factor * 250.0 / 32768.0;
-  gyro_read.z = gyro_read_raw.z * m_gyr_range_factor * 250.0 / 32768.0;
+  gyro_read.x = gyro_read_raw.x * m_gyro_range_factor * 250.0 / 32768.0;
+  gyro_read.y = gyro_read_raw.y * m_gyro_range_factor * 250.0 / 32768.0;
+  gyro_read.z = gyro_read_raw.z * m_gyro_range_factor * 250.0 / 32768.0;
 
   return gyro_read;
 }
@@ -313,16 +313,16 @@ hal::status icm20948::enable_cycle(icm20948_cycle p_cycle)
 {
   m_reg_val = HAL_CHECK(read_register8(0, icm20948_lp_config));
   m_reg_val &= 0x0F;
-  m_reg_val |= p_cycle;
+  m_reg_val |= static_cast<hal::byte>(p_cycle);
 
   HAL_CHECK(write_register8(0, icm20948_lp_config, m_reg_val));
   return hal::success();
 }
 
-hal::status icm20948::enable_low_power(bool p_enLP)
+hal::status icm20948::enable_low_power(bool p_enable_low_power)
 {
   m_reg_val = HAL_CHECK(read_register8(0, icm20948_pwr_mgmt_1));
-  if (p_enLP) {
+  if (p_enable_low_power) {
     m_reg_val |= icm20948_lp_en;
   } else {
     m_reg_val &= ~icm20948_lp_en;
@@ -331,7 +331,7 @@ hal::status icm20948::enable_low_power(bool p_enLP)
   return hal::success();
 }
 
-hal::status icm20948::set_gyr_averg_cycle_mode(icm20948_gyro_avg_low_pwr p_avg)
+hal::status icm20948::set_gyro_averg_cycle_mode(icm20948_gyro_avg_low_pwr p_avg)
 {
   HAL_CHECK(write_register8(2, icm20948_gyro_config_2, p_avg));
   return hal::success();
