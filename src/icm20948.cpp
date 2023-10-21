@@ -284,11 +284,13 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() {
 // }
 
       // Optional: Read back the control register to confirm the mode
-      enable_bypass_mode();
+    // enable_bypass_mode();
   HAL_CHECK(hal::write(*m_i2c,
                       ak09916_address,
                       std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
                       hal::never_timeout()));
+
+
 
   // Read Mag Data
   auto data = HAL_CHECK(hal::write_then_read<6>(
@@ -305,6 +307,9 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() {
   mag_read.x = x * ak09916_mag_lsb;
   mag_read.y = y * ak09916_mag_lsb;
   mag_read.z = z * ak09916_mag_lsb;
+
+  HAL_CHECK(mag_status1());
+  HAL_CHECK(mag_status2());
 
   return mag_read;
 }
@@ -418,11 +423,22 @@ enable_bypass_mode();
 
 
 //read mag status
-hal::result<hal::byte> icm20948::mag_status(){
+hal::result<hal::byte> icm20948::mag_status1(){
   auto status = HAL_CHECK(hal::write_then_read<1>(
     *m_i2c,
     ak09916_address, 
     std::array<hal::byte, 1>{ ak09916_status_1 }, 
+    hal::never_timeout()
+  ));
+
+  return status[0];
+}
+
+hal::result<hal::byte> icm20948::mag_status2(){
+  auto status = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_status_2 }, 
     hal::never_timeout()
   ));
 

@@ -229,7 +229,8 @@ public:
   void set_mag_op_mode(ak09916_op_mode p_op_mode);
   // void reset_mag();
   hal::status enable_bypass_mode();
-  hal::result<hal::byte> mag_status();
+  hal::result<hal::byte> mag_status1();
+  hal::result<hal::byte> mag_status2();
   hal::status reset_mag();
   hal::result<hal::byte> check_mag_mode();
   hal::result<hal::byte> whoami_ak09916_wia1_direct();
