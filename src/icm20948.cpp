@@ -269,7 +269,7 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() {
   mag_read_t mag_read;
 
   int polling_attempts = 0;
-  const int max_polling_attempts = 1000; // Some reasonable limit
+  const int max_polling_attempts = 1000;
 
   while (true) {
     auto status = HAL_CHECK(hal::write_then_read<1>(
@@ -284,9 +284,15 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() {
     }
 
     if (++polling_attempts > max_polling_attempts) {
-      return hal::new_error(); // Return an appropriate error code or message
+      return hal::new_error();
     }
   }
+
+
+  static float last_mag_x = 0;
+  static float last_mag_y = 0;
+  static float last_mag_z = 0;
+  const float alpha = 0.05;
 
   // Read Mag Data
   auto data = HAL_CHECK(hal::write_then_read<6>(
@@ -300,9 +306,18 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() {
   int16_t y = static_cast<int16_t>((data[3] << 8) | data[2]);
   int16_t z = static_cast<int16_t>((data[5] << 8) | data[4]);
 
-  mag_read.x = x * 0.05;  // Adjust the scale factor
-  mag_read.y = y * 0.05;
-  mag_read.z = z * 0.05;
+
+  float filtered_mag_x = (1 - alpha) * last_mag_x + alpha * (x * 0.05);
+  float filtered_mag_y = (1 - alpha) * last_mag_y + alpha * (y * 0.05);
+  float filtered_mag_z = (1 - alpha) * last_mag_z + alpha * (z * 0.05);
+
+  last_mag_x = filtered_mag_x;
+  last_mag_y = filtered_mag_y;
+  last_mag_z = filtered_mag_z;
+
+  mag_read.x = filtered_mag_x;
+  mag_read.y = filtered_mag_y;
+  mag_read.z = filtered_mag_z;
 
   HAL_CHECK(mag_status1());
   HAL_CHECK(mag_status2());

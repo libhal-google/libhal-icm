@@ -21,7 +21,7 @@
 #define M_PI 3.14159265358979323846
 
 float computeHeading(float x, float y, float offset = 0.0) { 
-    float angle = atan2(y, x) * (180.0 / M_PI);  // Convert from radians to degrees
+    float angle = 360 - (atan2(y, x) * (180.0 / M_PI));
     angle += offset;  // Apply offset
     if (angle < 0) {
         angle += 360;
@@ -53,9 +53,6 @@ hal::status application(hardware_map& p_map)
   while (true) {
 
 
-    auto mag_status1 = HAL_CHECK(icm_device.mag_status1());
-    auto mag_status2 = HAL_CHECK(icm_device.mag_status2());
-    // (void)hal::delay(clock, 500ms);
     auto accel = HAL_CHECK(icm_device.read_acceleration());
     (void)hal::delay(clock, 10ms);
     auto gyro = HAL_CHECK(icm_device.read_gyroscope());
@@ -65,10 +62,6 @@ hal::status application(hardware_map& p_map)
     auto mag = HAL_CHECK(icm_device.read_magnetometer());
     (void)hal::delay(clock, 10ms);
     hal::print(console, "\n\n================Reading IMU================\n");
-
-    hal::print<128>(console,"\n\nMag Status 1:      %x", mag_status1);
-
-    hal::print<128>(console, "\n\nMag Status 2:      %x", mag_status2);
 
     hal::print<128>(console,
                     "\n\nG-Accel Values:    x = %fg, y = %fg, z = %fg",
@@ -92,7 +85,7 @@ hal::status application(hardware_map& p_map)
                     mag.y,
                     mag.z);
 
-    float heading = computeHeading(-mag.x, mag.y, 0.0);
+    float heading = computeHeading(mag.x, mag.y, 0.0);
     hal::print<128>(console, "\n\nHeading: %f°", heading);
 
 
