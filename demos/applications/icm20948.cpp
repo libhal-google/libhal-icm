@@ -44,7 +44,7 @@ hal::status application(hardware_map& p_map)
 
   hal::print(console, "icm Application Starting...\n\n");
   (void)hal::delay(clock, 200ms);
-  auto icm_device = HAL_CHECK(hal::icm::icm20948::create(i2c, 0x69));
+  auto icm_device = HAL_CHECK(hal::icm::icm20948::create(i2c));
   (void)hal::delay(clock, 200ms);
   icm_device.init_mag();
   (void)hal::delay(clock, 100ms);

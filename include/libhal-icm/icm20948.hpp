@@ -190,8 +190,7 @@ public:
    */
   [[nodiscard]] hal::result<temp_read_t> read_temperature();
 
-  [[nodiscard]] static result<icm20948> create(hal::i2c& p_i2c,
-                                               hal::byte p_device_address);
+  [[nodiscard]] static result<icm20948> create(hal::i2c& p_i2c);
 
   hal::status init();
   hal::status auto_offsets();
@@ -238,7 +237,6 @@ public:
 
 private:
   hal::i2c* m_i2c;
-  hal::byte m_address;
   hal::byte m_current_bank;
   accel_read_t m_acc_offset_val;
   accel_read_t m_acc_corr_factor;
@@ -247,9 +245,8 @@ private:
   hal::byte m_gyr_range_factor;
   hal::byte m_reg_val;  // intermediate storage of register values
 
-  explicit icm20948(hal::i2c& p_i2c, hal::byte p_device_address)
+  explicit icm20948(hal::i2c& p_i2c)
     : m_i2c(&p_i2c)
-    , m_address(p_device_address)
   {
   }
 

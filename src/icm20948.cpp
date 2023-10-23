@@ -21,10 +21,9 @@
 namespace hal::icm {
 using namespace std::literals;
 
-result<icm20948> icm20948::create(hal::i2c& p_i2c,
-                                  hal::byte p_device_address = icm20948_address)
+result<icm20948> icm20948::create(hal::i2c& p_i2c)
 {
-  icm20948 icm(p_i2c, p_device_address);
+  icm20948 icm(p_i2c);
 
   HAL_CHECK(icm.init());
 
@@ -216,7 +215,7 @@ hal::result<icm20948::accel_read_t> icm20948::read_acceleration()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<6>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_accel_out },
                             hal::never_timeout()));
 
@@ -246,7 +245,7 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<6>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_gyro_out },
                             hal::never_timeout()));
 
@@ -334,7 +333,7 @@ hal::result<icm20948::temp_read_t> icm20948::read_temperature()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<2>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_temp_out },
                             hal::never_timeout()));
   int16_t rawTemp = static_cast<int16_t>(((data[0]) << 8) | data[1]);
@@ -519,13 +518,13 @@ hal::status icm20948::switch_bank(hal::byte p_newBank)
   }
   auto reg_buffer = HAL_CHECK(
     hal::write_then_read<1>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_reg_bank_sel },
                             hal::never_timeout()));
 
   hal::byte reg_val = reg_buffer[0];
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 2>{ reg_val, m_current_bank },
                        hal::never_timeout()));
 
@@ -538,7 +537,7 @@ hal::status icm20948::write_register8(hal::byte p_bank,
 {
   switch_bank(p_bank);
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 2>{ p_reg_addr, p_val },
                        hal::never_timeout()));
   return hal::success();
@@ -553,7 +552,7 @@ hal::status icm20948::write_register16(hal::byte p_bank,
   hal::byte LSByte = p_val & 0xFF;
 
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 3>{ p_reg, MSByte, LSByte },
                        hal::never_timeout()));
 
@@ -566,7 +565,7 @@ hal::result<hal::byte> icm20948::read_register8(hal::byte p_bank,
   switch_bank(p_bank);
   auto ctrl_buffer =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_read_reg },
                                       hal::never_timeout()));
   return ctrl_buffer[0];
@@ -582,12 +581,12 @@ hal::result<hal::byte> icm20948::read_register16(hal::byte p_bank,
 
   auto MSByte =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_reg },
                                       hal::never_timeout()));
   auto LSByte =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_reg },
                                       hal::never_timeout()));
 
