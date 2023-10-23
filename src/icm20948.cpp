@@ -268,51 +268,48 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
 hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() { 
   mag_read_t mag_read;
 
-// while (true) {
-//   auto status = HAL_CHECK(hal::write_then_read<1>(
-//     *m_i2c, 
-//     ak09916_address, 
-//     std::array<hal::byte, 1>{ ak09916_status_1 }, 
-//     hal::never_timeout()
-//   ));
+  int polling_attempts = 0;
+  const int max_polling_attempts = 1000; // Some reasonable limit
 
-//   if (!(status[0] & 0x01)) {  // Check if data ready bit is set
-//       continue;
-//   }else{
-//     break;
-//   }
-// }
+  while (true) {
+    auto status = HAL_CHECK(hal::write_then_read<1>(
+      *m_i2c, 
+      ak09916_address, 
+      std::array<hal::byte, 1>{ ak09916_status_1 }, 
+      hal::never_timeout()
+    ));
 
-      // Optional: Read back the control register to confirm the mode
-    // enable_bypass_mode();
-  HAL_CHECK(hal::write(*m_i2c,
-                      ak09916_address,
-                      std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
-                      hal::never_timeout()));
+    if (status[0] & 0x01) {  // Check if data ready bit is set
+      break;
+    }
 
-
+    if (++polling_attempts > max_polling_attempts) {
+      return hal::new_error(); // Return an appropriate error code or message
+    }
+  }
 
   // Read Mag Data
   auto data = HAL_CHECK(hal::write_then_read<6>(
-      *m_i2c, 
-      ak09916_address, 
-      std::array<hal::byte, 1>{ ak09916_hxl }, 
-      hal::never_timeout()
+    *m_i2c, 
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_hxl }, 
+    hal::never_timeout()
   ));
 
-  int16_t x = static_cast<int16_t>((data[0] << 8) | data[1]);
-  int16_t y = static_cast<int16_t>((data[2] << 8) | data[3]);
-  int16_t z = static_cast<int16_t>((data[4] << 8) | data[5]);
+  int16_t x = static_cast<int16_t>((data[1] << 8) | data[0]);
+  int16_t y = static_cast<int16_t>((data[3] << 8) | data[2]);
+  int16_t z = static_cast<int16_t>((data[5] << 8) | data[4]);
 
-  mag_read.x = x * ak09916_mag_lsb;
-  mag_read.y = y * ak09916_mag_lsb;
-  mag_read.z = z * ak09916_mag_lsb;
+  mag_read.x = x * 0.05;  // Adjust the scale factor
+  mag_read.y = y * 0.05;
+  mag_read.z = z * 0.05;
 
   HAL_CHECK(mag_status1());
   HAL_CHECK(mag_status2());
 
   return mag_read;
 }
+
 
 hal::result<icm20948::temp_read_t> icm20948::read_temperature()
 {
