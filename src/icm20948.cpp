@@ -21,10 +21,9 @@
 namespace hal::icm {
 using namespace std::literals;
 
-result<icm20948> icm20948::create(hal::i2c& p_i2c,
-                                  hal::byte p_device_address = icm20948_address)
+result<icm20948> icm20948::create(hal::i2c& p_i2c)
 {
-  icm20948 icm(p_i2c, p_device_address);
+  icm20948 icm(p_i2c);
 
   HAL_CHECK(icm.init());
 
@@ -68,7 +67,7 @@ hal::status icm20948::auto_offsets()
   set_acc_dlpf(icm20948_dlpf_6);
   set_temp_dlpf(icm20948_dlpf_6);
 
-  set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
+  // set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
 
   return hal::success();
 }
@@ -216,7 +215,7 @@ hal::result<icm20948::accel_read_t> icm20948::read_acceleration()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<6>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_accel_out },
                             hal::never_timeout()));
 
@@ -246,7 +245,7 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<6>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_gyro_out },
                             hal::never_timeout()));
 
@@ -265,30 +264,66 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   return gyro_read;
 }
 
-hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
-{
-  // read_ak09916_register16(icm20948_ext_slv_sens_data_00);
-  std::array<hal::byte, 6> data{};
-  int16_t x, y, z;
+hal::result<icm20948::mag_read_t> icm20948::read_magnetometer() { 
   mag_read_t mag_read;
 
-  switch_bank(0);
-  data = HAL_CHECK(hal::write_then_read<6>(
-    *m_i2c,
-    m_address,
-    std::array<hal::byte, 1>{ icm20948_ext_slv_sens_data_00 },
-    hal::never_timeout()));
+  int polling_attempts = 0;
+  const int max_polling_attempts = 1000;
 
-  x = static_cast<int16_t>((data[0]) << 8) | data[1];
-  y = static_cast<int16_t>((data[2]) << 8) | data[3];
-  z = static_cast<int16_t>((data[4]) << 8) | data[5];
+  while (true) {
+    auto status = HAL_CHECK(hal::write_then_read<1>(
+      *m_i2c, 
+      ak09916_address, 
+      std::array<hal::byte, 1>{ ak09916_status_1 }, 
+      hal::never_timeout()
+    ));
 
-  mag_read.x = x * ak09916_mag_lsb;
-  mag_read.y = y * ak09916_mag_lsb;
-  mag_read.z = z * ak09916_mag_lsb;
+    if (status[0] & 0x01) {  // Check if data ready bit is set
+      break;
+    }
+
+    if (++polling_attempts > max_polling_attempts) {
+      return hal::new_error();
+    }
+  }
+
+
+  static float last_mag_x = 0;
+  static float last_mag_y = 0;
+  static float last_mag_z = 0;
+  const float alpha = 0.05;
+
+  // Read Mag Data
+  auto data = HAL_CHECK(hal::write_then_read<6>(
+    *m_i2c, 
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_hxl }, 
+    hal::never_timeout()
+  ));
+
+  int16_t x = static_cast<int16_t>((data[1] << 8) | data[0]);
+  int16_t y = static_cast<int16_t>((data[3] << 8) | data[2]);
+  int16_t z = static_cast<int16_t>((data[5] << 8) | data[4]);
+
+
+  float filtered_mag_x = (1 - alpha) * last_mag_x + alpha * (x * 0.05);
+  float filtered_mag_y = (1 - alpha) * last_mag_y + alpha * (y * 0.05);
+  float filtered_mag_z = (1 - alpha) * last_mag_z + alpha * (z * 0.05);
+
+  last_mag_x = filtered_mag_x;
+  last_mag_y = filtered_mag_y;
+  last_mag_z = filtered_mag_z;
+
+  mag_read.x = filtered_mag_x;
+  mag_read.y = filtered_mag_y;
+  mag_read.z = filtered_mag_z;
+
+  HAL_CHECK(mag_status1());
+  HAL_CHECK(mag_status2());
 
   return mag_read;
 }
+
 
 hal::result<icm20948::temp_read_t> icm20948::read_temperature()
 {
@@ -298,7 +333,7 @@ hal::result<icm20948::temp_read_t> icm20948::read_temperature()
   switch_bank(0);
   data = HAL_CHECK(
     hal::write_then_read<2>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_temp_out },
                             hal::never_timeout()));
   int16_t rawTemp = static_cast<int16_t>(((data[0]) << 8) | data[1]);
@@ -359,25 +394,96 @@ hal::status icm20948::sleep(bool p_sleep)
 
 hal::status icm20948::init_mag()
 {
-  enable_i2c_host();
-  reset_mag();
-  // reset_icm20948();
-  // sleep(false);
-  // write_register8(2, ICM20948_ODR_ALIGN_EN, 1);  // aligns ODR
-  enable_i2c_host();
+  
+  enable_bypass_mode();
+  set_mag_op_mode(ak09916_cont_mode_20hz);  // For Mag
 
-  // auto whoAmI = HAL_CHECK(whoami_mag());
-  // if (!((whoAmI == AK09916_WHO_AM_I_1) || (whoAmI == AK09916_WHO_AM_I_2))) {
-  //   return hal::new_error();
-  // }
+  HAL_CHECK(hal::write(*m_i2c,
+                      ak09916_address,
+                      std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
+                      hal::never_timeout()));
+  
+  return hal::success();
+}
+
+
+//reset mag
+hal::status icm20948::reset_mag(){
+  enable_bypass_mode();
+  HAL_CHECK(hal::write(*m_i2c,
+                    ak09916_address,
+                    std::array<hal::byte, 2>{ ak09916_cntl_3, 0x01 }, // Soft Reset
+                    hal::never_timeout()));
 
   return hal::success();
 }
 
-hal::result<hal::byte> icm20948::whoami_mag()
-{
-  return HAL_CHECK(read_ak09916_register16(ak09916_wia_2));
+hal::result<hal::byte> icm20948::check_mag_mode(){
+enable_bypass_mode();
+    auto mode = HAL_CHECK(hal::write_then_read<1>(*m_i2c, 
+                                                  ak09916_address, 
+                                                  std::array<hal::byte, 1>{ ak09916_cntl_2 }, 
+                                                  hal::never_timeout()));
+    // if (mode[0] != ak09916_cont_mode_20hz) {
+    //     return hal::new_error();  // Or handle accordingly
+    // }
+  return mode[0];
 }
+
+// set mag status
+
+
+//read mag status
+hal::result<hal::byte> icm20948::mag_status1(){
+  auto status = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_status_1 }, 
+    hal::never_timeout()
+  ));
+
+  return status[0];
+}
+
+hal::result<hal::byte> icm20948::mag_status2(){
+  auto status = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_status_2 }, 
+    hal::never_timeout()
+  ));
+
+  return status[0];
+}
+
+hal::result<hal::byte> icm20948::whoami_ak09916_wia1_direct()
+{
+  auto result = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c,
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_wia_1 }, 
+    hal::never_timeout()
+  ));
+  return result[0];
+}
+
+hal::result<hal::byte> icm20948::whoami_ak09916_wia2_direct()
+{
+  auto result = HAL_CHECK(hal::write_then_read<1>(
+    *m_i2c, 
+    ak09916_address, 
+    std::array<hal::byte, 1>{ ak09916_wia_2 }, 
+    hal::never_timeout()
+  ));
+  return result[0];
+}
+
+
+
+// hal::result<hal::byte> icm20948::whoami_mag()
+// {
+//   return HAL_CHECK(read_ak09916_register16(ak09916_wia_2));
+// }
 
 void icm20948::set_mag_op_mode(ak09916_op_mode p_op_mode)
 {
@@ -387,10 +493,10 @@ void icm20948::set_mag_op_mode(ak09916_op_mode p_op_mode)
   }
 }
 
-void icm20948::reset_mag()
-{
-  write_ak09916_register8(ak09916_cntl_3, 0x01);
-}
+// void icm20948::reset_mag()
+// {
+//   write_ak09916_register8(ak09916_cntl_3, 0x01);
+// }
 
 /************************************************
      Private Functions
@@ -412,13 +518,13 @@ hal::status icm20948::switch_bank(hal::byte p_newBank)
   }
   auto reg_buffer = HAL_CHECK(
     hal::write_then_read<1>(*m_i2c,
-                            m_address,
+                            icm20948_address,
                             std::array<hal::byte, 1>{ icm20948_reg_bank_sel },
                             hal::never_timeout()));
 
   hal::byte reg_val = reg_buffer[0];
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 2>{ reg_val, m_current_bank },
                        hal::never_timeout()));
 
@@ -431,7 +537,7 @@ hal::status icm20948::write_register8(hal::byte p_bank,
 {
   switch_bank(p_bank);
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 2>{ p_reg_addr, p_val },
                        hal::never_timeout()));
   return hal::success();
@@ -446,7 +552,7 @@ hal::status icm20948::write_register16(hal::byte p_bank,
   hal::byte LSByte = p_val & 0xFF;
 
   HAL_CHECK(hal::write(*m_i2c,
-                       m_address,
+                       icm20948_address,
                        std::array<hal::byte, 3>{ p_reg, MSByte, LSByte },
                        hal::never_timeout()));
 
@@ -459,7 +565,7 @@ hal::result<hal::byte> icm20948::read_register8(hal::byte p_bank,
   switch_bank(p_bank);
   auto ctrl_buffer =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_read_reg },
                                       hal::never_timeout()));
   return ctrl_buffer[0];
@@ -475,12 +581,12 @@ hal::result<hal::byte> icm20948::read_register16(hal::byte p_bank,
 
   auto MSByte =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_reg },
                                       hal::never_timeout()));
   auto LSByte =
     HAL_CHECK(hal::write_then_read<1>(*m_i2c,
-                                      m_address,
+                                      icm20948_address,
                                       std::array<hal::byte, 1>{ p_reg },
                                       hal::never_timeout()));
 
@@ -532,6 +638,20 @@ hal::status icm20948::enable_i2c_host()
 
   return hal::success();
 }
+
+
+hal::status icm20948::enable_bypass_mode()
+{
+  HAL_CHECK(write_register8(0, icm20948_int_pin_cfg, icm20948_bypass_en));
+
+  return hal::success();
+}
+
+hal::result<hal::byte> icm20948::read_ak09916_status1()
+{
+    return read_ak09916_register8(ak09916_status_1);
+}
+
 
 hal::status icm20948::enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes)
 {

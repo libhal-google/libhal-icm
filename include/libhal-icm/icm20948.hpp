@@ -190,8 +190,7 @@ public:
    */
   [[nodiscard]] hal::result<temp_read_t> read_temperature();
 
-  [[nodiscard]] static result<icm20948> create(hal::i2c& p_i2c,
-                                               hal::byte p_device_address);
+  [[nodiscard]] static result<icm20948> create(hal::i2c& p_i2c);
 
   hal::status init();
   hal::status auto_offsets();
@@ -227,11 +226,17 @@ public:
   hal::status init_mag();
   [[nodiscard]] hal::result<hal::byte> whoami_mag();
   void set_mag_op_mode(ak09916_op_mode p_op_mode);
-  void reset_mag();
+  // void reset_mag();
+  hal::status enable_bypass_mode();
+  hal::result<hal::byte> mag_status1();
+  hal::result<hal::byte> mag_status2();
+  hal::status reset_mag();
+  hal::result<hal::byte> check_mag_mode();
+  hal::result<hal::byte> whoami_ak09916_wia1_direct();
+  hal::result<hal::byte> whoami_ak09916_wia2_direct();
 
 private:
   hal::i2c* m_i2c;
-  hal::byte m_address;
   hal::byte m_current_bank;
   accel_read_t m_acc_offset_val;
   accel_read_t m_acc_corr_factor;
@@ -240,9 +245,8 @@ private:
   hal::byte m_gyr_range_factor;
   hal::byte m_reg_val;  // intermediate storage of register values
 
-  explicit icm20948(hal::i2c& p_i2c, hal::byte p_device_address)
+  explicit icm20948(hal::i2c& p_i2c)
     : m_i2c(&p_i2c)
-    , m_address(p_device_address)
   {
   }
 
@@ -264,8 +268,10 @@ private:
 
   hal::status reset_icm20948();
   hal::status enable_i2c_host();
+  hal::result<hal::byte> read_ak09916_status1();
 
   hal::status enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes);
+  hal::status set_mag_op_mode_bypass(ak09916_op_mode p_op_mode);
 };
 
 }  // namespace hal::icm
