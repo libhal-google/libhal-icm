@@ -24,7 +24,6 @@ class icm20948
 {
 
 public:
-
   enum class icm20948_cycle : hal::byte
   {
     icm20948_no_cycle = 0x00,
@@ -199,7 +198,7 @@ public:
 
   /**
    * @brief Set default acceleration offsets
-   *    All offset parameters are in 'g's 
+   *    All offset parameters are in 'g's
    */
   hal::status set_acc_offsets(float p_xmin,
                               float p_xmax,
@@ -233,9 +232,6 @@ public:
 
   /* Magnetometer */
   hal::status init_mag();
-  [[nodiscard]] hal::result<hal::byte> whoami_mag();
-  void set_mag_op_mode(ak09916_op_mode p_op_mode);
-  // void reset_mag();
   hal::status enable_bypass_mode();
   hal::result<hal::byte> mag_status1();
   hal::result<hal::byte> mag_status2();
@@ -271,16 +267,7 @@ private:
   [[nodiscard]] hal::result<hal::byte> read_register16(hal::byte p_bank,
                                                        hal::byte p_reg);
 
-  hal::status write_ak09916_register8(hal::byte reg, hal::byte p_val);
-  [[nodiscard]] hal::result<hal::byte> read_ak09916_register8(hal::byte p_reg);
-  [[nodiscard]] hal::result<int16_t> read_ak09916_register16(hal::byte p_reg);
-
   hal::status reset_icm20948();
-  hal::status enable_i2c_host();
-  hal::result<hal::byte> read_ak09916_status1();
-
-  hal::status enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes);
-  hal::status set_mag_op_mode_bypass(ak09916_op_mode p_op_mode);
 };
 
 }  // namespace hal::icm

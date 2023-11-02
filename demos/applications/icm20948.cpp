@@ -13,25 +13,24 @@
 // limitations under the License.
 
 #include "../hardware_map.hpp"
+#include <cmath>
 #include <libhal-icm/icm20948.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
-#include <cmath>
 
 #define M_PI 3.14159265358979323846
 
-float computeHeading(float x, float y, float offset = 0.0) { 
-    float angle = 360 - (atan2(y, x) * (180.0 / M_PI));
-    angle += offset;  // Apply offset
-    if (angle < 0) {
-        angle += 360;
-    } else if (angle >= 360) {
-        angle -= 360;
-    }
-    return angle;
+float computeHeading(float x, float y, float offset = 0.0)
+{
+  float angle = 360 - (atan2(y, x) * (180.0 / M_PI));
+  angle += offset;  // Apply offset
+  if (angle < 0) {
+    angle += 360;
+  } else if (angle >= 360) {
+    angle -= 360;
+  }
+  return angle;
 }
-
-
 
 hal::status application(hardware_map& p_map)
 {
@@ -52,7 +51,6 @@ hal::status application(hardware_map& p_map)
 
   while (true) {
 
-
     auto accel = HAL_CHECK(icm_device.read_acceleration());
     (void)hal::delay(clock, 10ms);
     auto gyro = HAL_CHECK(icm_device.read_gyroscope());
@@ -69,7 +67,6 @@ hal::status application(hardware_map& p_map)
                     accel.y,
                     accel.z);
 
-
     hal::print<128>(console,
                     "\n\nGyro Values:       x = %f,  y = %f,  z = %f",
                     gyro.x,
@@ -77,7 +74,6 @@ hal::status application(hardware_map& p_map)
                     gyro.z);
 
     hal::print<128>(console, "\n\nCurrent Temperature: %f°C", temp.temp);
-
 
     hal::print<128>(console,
                     "\n\nMagnetometer Values: x = %f, y = %f, z = %f",
@@ -87,7 +83,6 @@ hal::status application(hardware_map& p_map)
 
     float heading = computeHeading(mag.x, mag.y, 0.0);
     hal::print<128>(console, "\n\nHeading: %f°", heading);
-
 
     hal::print(console, "\n\n===========================================\n");
   }
