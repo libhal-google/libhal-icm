@@ -136,8 +136,8 @@ static constexpr hal::byte ak09916_16_bit = 0x10;
 static constexpr hal::byte ak09916_ovf = 0x08;
 static constexpr hal::byte ak09916_read = 0x80;
 
-static constexpr uint16_t ak09916_who_am_i_1 = 0x4809;
-static constexpr uint16_t ak09916_who_am_i_2 = 0x0948;
+static constexpr uint16_t ak09916_who_am_i_1 = 0x48;
+static constexpr uint16_t ak09916_who_am_i_2 = 0x09;
 
 static constexpr hal::byte icm20948_who_am_i_content = 0xEA;
 static constexpr float icm20948_room_temp_offset = 0.0;
