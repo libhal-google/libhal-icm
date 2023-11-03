@@ -239,6 +239,8 @@ public:
   hal::result<hal::byte> check_mag_mode();
   hal::result<hal::byte> whoami_ak09916_wia1_direct();
   hal::result<hal::byte> whoami_ak09916_wia2_direct();
+  hal::status set_mag_op_mode(ak09916_op_mode p_op_mode);
+  hal::status write_ak09916_register8(hal::byte p_reg, hal::byte p_val);
 
 private:
   hal::i2c* m_i2c;
@@ -266,6 +268,7 @@ private:
                                                       hal::byte p_reg);
   [[nodiscard]] hal::result<hal::byte> read_register16(hal::byte p_bank,
                                                        hal::byte p_reg);
+  hal::status enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes);
 
   hal::status reset_icm20948();
 };

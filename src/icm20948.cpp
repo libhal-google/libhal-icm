@@ -390,14 +390,35 @@ hal::status icm20948::sleep(bool p_sleep)
 
 hal::status icm20948::init_mag()
 {
-
   enable_bypass_mode();
+  set_mag_op_mode(ak09916_cont_mode_20hz);
+  return hal::success();
+}
+
+hal::status icm20948::set_mag_op_mode(ak09916_op_mode p_op_mode)
+{
+  write_ak09916_register8(ak09916_cntl_2, p_op_mode);
+  if (p_op_mode != ak09916_pwr_down) {
+    enable_mag_data_read(ak09916_hxl, 0x08);
+  }
 
   HAL_CHECK(hal::write(
     *m_i2c,
     ak09916_address,
     std::array<hal::byte, 2>{ ak09916_cntl_2, ak09916_cont_mode_20hz },
     hal::never_timeout()));
+
+  return hal::success();
+}
+
+hal::status icm20948::write_ak09916_register8(hal::byte p_reg, hal::byte p_val)
+{
+
+  write_register8(3, icm20948_i2c_slv0_addr, ak09916_address);  // write AK09916
+  write_register8(3,
+                  icm20948_i2c_slv0_reg,
+                  p_reg);  // define AK09916 register to be written to
+  write_register8(3, icm20948_i2c_slv0_do, p_val);
 
   return hal::success();
 }
@@ -571,6 +592,20 @@ hal::status icm20948::reset_icm20948()
 hal::status icm20948::enable_bypass_mode()
 {
   HAL_CHECK(write_register8(0, icm20948_int_pin_cfg, icm20948_bypass_en));
+
+  return hal::success();
+}
+
+hal::status icm20948::enable_mag_data_read(hal::byte p_reg, hal::byte p_bytes)
+{
+  HAL_CHECK(write_register8(3,
+                            icm20948_i2c_slv0_addr,
+                            ak09916_address | ak09916_read));  // read AK09916
+  HAL_CHECK(write_register8(
+    3, icm20948_i2c_slv0_reg, p_reg));  // define AK09916 register to be read
+  HAL_CHECK(write_register8(3,
+                            icm20948_i2c_slv0_ctrl,
+                            0x80 | p_bytes));  // enable read | number of byte
 
   return hal::success();
 }
