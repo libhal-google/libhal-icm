@@ -24,97 +24,97 @@ class icm20948
 {
 
 public:
-  enum class icm20948_cycle : hal::byte
+  enum class cycle : hal::byte
   {
-    icm20948_no_cycle = 0x00,
-    icm20948_gyro_cycle = 0x10,
-    icm20948_acc_cycle = 0x20,
-    icm20948_acc_gyro_cycle = 0x30,
-    icm20948_acc_gyro_i2c_mst_cycle = 0x70
+    no_cycle = 0x00,
+    gyro_cycle = 0x10,
+    acc_cycle = 0x20,
+    acc_gyro_cycle = 0x30,
+    acc_gyro_i2c_mst_cycle = 0x70
   };
 
-  enum class icm20948_int_pin_pol : hal::byte
+  enum class int_pin_pol : hal::byte
   {
-    icm20948_act_high,
-    icm20948_act_low
+    act_high,
+    act_low
   };
 
-  enum class icm20948_int_type : hal::byte
+  enum class int_type : hal::byte
   {
-    icm20948_fsync_int = 0x01,
-    icm20948_wom_int = 0x02,
-    icm20948_dmp_int = 0x04,
-    icm20948_data_ready_int = 0x08,
-    icm20948_fifo_ovf_int = 0x10,
-    icm20948_fifo_wm_int = 0x20
+    fsync_int = 0x01,
+    wom_int = 0x02,
+    dmp_int = 0x04,
+    data_ready_int = 0x08,
+    fifo_ovf_int = 0x10,
+    fifo_wm_int = 0x20
   };
 
-  enum class icm20948_fifo_type : hal::byte
+  enum class fifo_type : hal::byte
   {
-    icm20948_fifo_acc = 0x10,
-    icm20948_fifo_gyr = 0x0E,
-    icm20948_fifo_acc_gyr = 0x1E
+    fifo_acc = 0x10,
+    fifo_gyr = 0x0E,
+    fifo_acc_gyr = 0x1E
   };
 
-  enum icm20948_fifo_mode_choice : hal::byte
+  enum fifo_mode_choice : hal::byte
   {
-    icm20948_continuous,
-    icm20948_stop_when_full
+    continuous,
+    stop_when_full
   };
 
-  enum icm20948_gyro_range : hal::byte
+  enum gyro_range : hal::byte
   {
-    icm20948_gyro_range_250,
-    icm20948_gyro_range_500,
-    icm20948_gyro_range_1000,
-    icm20948_gyro_range_2000
+    gyro_range_250,
+    gyro_range_500,
+    gyro_range_1000,
+    gyro_range_2000
   };
 
-  enum icm20948_dlpf : hal::byte
+  enum digital_lowpass_filter : hal::byte
   {
-    icm20948_dlpf_0,
-    icm20948_dlpf_1,
-    icm20948_dlpf_2,
-    icm20948_dlpf_3,
-    icm20948_dlpf_4,
-    icm20948_dlpf_5,
-    icm20948_dlpf_6,
-    icm20948_dlpf_7,
-    icm20948_dlpf_off
+    dlpf_0,
+    dlpf_1,
+    dlpf_2,
+    dlpf_3,
+    dlpf_4,
+    dlpf_5,
+    dlpf_6,
+    dlpf_7,
+    dlpf_off
   };
 
-  enum icm20948_gyro_avg_low_pwr : hal::byte
+  enum gyro_avg_low_pwr : hal::byte
   {
-    icm20948_gyro_avg_1,
-    icm20948_gyro_avg_2,
-    icm20948_gyro_avg_4,
-    icm20948_gyro_avg_8,
-    icm20948_gyro_avg_16,
-    icm20948_gyro_avg_32,
-    icm20948_gyro_avg_64,
-    icm20948_gyro_avg_128
+    gyro_avg_1,
+    gyro_avg_2,
+    gyro_avg_4,
+    gyro_avg_8,
+    gyro_avg_16,
+    gyro_avg_32,
+    gyro_avg_64,
+    gyro_avg_128
   };
 
-  enum icm20948_acc_range : hal::byte
+  enum acc_range : hal::byte
   {
-    icm20948_acc_range_2g,
-    icm20948_acc_range_4g,
-    icm20948_acc_range_8g,
-    icm20948_acc_range_16g
+    acc_range_2g,
+    acc_range_4g,
+    acc_range_8g,
+    acc_range_16g
   };
 
-  enum icm20948_acc_avg_low_pwr : hal::byte
+  enum acc_avg_low_pwr : hal::byte
   {
-    icm20948_acc_avg_4,
-    icm20948_acc_avg_8,
-    icm20948_acc_avg_16,
-    icm20948_acc_avg_32
+    acc_avg_4,
+    acc_avg_8,
+    acc_avg_16,
+    acc_avg_32
   };
 
-  enum icm20948_wom_comp : hal::byte
+  enum wom_comp : hal::byte
   {
-    icm20948_wom_comp_disable,
-    icm20948_wom_comp_enable
+    wom_comp_disable,
+    wom_comp_enable
   };
 
   enum ak09916_op_mode : hal::byte
@@ -127,14 +127,14 @@ public:
     ak09916_cont_mode_100hz = 0x08
   };
 
-  enum icm20948_orientation : hal::byte
+  enum orientation : hal::byte
   {
-    icm20948_flat,
-    icm20948_flat_1,
-    icm20948_xy,
-    icm20948_xy_1,
-    icm20948_yx,
-    icm20948_yx_1
+    flat,
+    flat_1,
+    xy,
+    xy_1,
+    yx,
+    yx_1
   };
 
   struct accel_read_t
@@ -161,6 +161,25 @@ public:
   struct temp_read_t
   {
     float temp;
+  };
+
+  // TODO: Add units
+  struct acceleration_offset_t
+  {
+    float xmin;
+    float xmax;
+    float ymin;
+    float ymax;
+    float zmin;
+    float zmax;
+  };
+
+  // TODO: add units
+  struct gyro_offset_t
+  {
+    float x_offset;
+    float y_offset;
+    float z_offset;
   };
 
   /**
@@ -200,34 +219,31 @@ public:
    * @brief Set default acceleration offsets
    *    All offset parameters are in 'g's
    */
-  hal::status set_acc_offsets(float p_xmin,
-                              float p_xmax,
-                              float p_ymin,
-                              float p_ymax,
-                              float p_zmin,
-                              float p_zmax);
+  hal::status set_acceleration_offsets(const acceleration_offset_t& acc_offfsets);
 
-  hal::status set_gyro_offsets(float p_x_offset,
-                               float p_y_offset,
-                               float p_z_offset);
+  /**
+   * @brief Set default gyroscope offsets
+   *    All offset parameters are in 'g's
+   */
+  hal::status set_gyro_offsets(const gyro_offset_t& gyro_offsets);
 
   hal::result<hal::byte> whoami();
 
   hal::status enable_acc(bool p_en_acc);
-  hal::status set_acc_range(icm20948_acc_range p_acc_range);
-  hal::status set_acc_dlpf(icm20948_dlpf p_dlpf);
+  hal::status set_acc_range(acc_range p_acc_range);
+  hal::status set_acc_dlpf(digital_lowpass_filter p_dlpf);
   hal::status set_acc_sample_rate_div(uint16_t p_acc_spl_rate_div);
   hal::status enable_gyr(bool p_enGyr);
-  hal::status set_gyro_range(icm20948_gyro_range gyroRange);
-  hal::status set_gyro_dlpf(icm20948_dlpf p_dlpf);
+  hal::status set_gyro_range(gyro_range gyroRange);
+  hal::status set_gyro_dlpf(digital_lowpass_filter p_dlpf);
   hal::status set_gyro_sample_rate_div(hal::byte p_gyro_spl_rate_div);
-  hal::status set_temp_dlpf(icm20948_dlpf p_dlpf);
+  hal::status set_temp_dlpf(digital_lowpass_filter p_dlpf);
 
   /* Power, Sleep, Standby */
-  hal::status enable_cycle(icm20948_cycle p_cycle);
+  hal::status enable_cycle(cycle p_cycle);
   hal::status enable_low_power(bool p_enable_low_power);
-  hal::status set_gyro_averg_cycle_mode(icm20948_gyro_avg_low_pwr p_avg);
-  hal::status set_acc_averg_cycle_mode(icm20948_acc_avg_low_pwr p_avg);
+  hal::status set_gyro_averg_cycle_mode(gyro_avg_low_pwr p_avg);
+  hal::status set_acc_averg_cycle_mode(acc_avg_low_pwr p_avg);
   hal::status sleep(bool p_sleep);
 
   /* Magnetometer */

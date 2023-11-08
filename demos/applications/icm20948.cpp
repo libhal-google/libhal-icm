@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../hardware_map.hpp"
 #include <cmath>
+
 #include <libhal-icm/icm20948.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#define M_PI 3.14159265358979323846
+#include "../hardware_map.hpp"
 
-float computeHeading(float x, float y, float offset = 0.0)
+float compute_heading(float x, float y, float offset = 0.0)
 {
-  float angle = 360 - (atan2(y, x) * (180.0 / M_PI));
+  float angle = 360 - (atan2(y, x) * (180.0 / std::numbers::pi));
   angle += offset;  // Apply offset
   if (angle < 0) {
     angle += 360;
@@ -42,23 +42,25 @@ hal::status application(hardware_map& p_map)
   auto& i2c = *p_map.i2c;
 
   hal::print(console, "icm Application Starting...\n\n");
-  (void)hal::delay(clock, 200ms);
+  hal::delay(clock, 200ms);
   auto icm_device = HAL_CHECK(hal::icm::icm20948::create(i2c));
-  (void)hal::delay(clock, 200ms);
+
+  hal::delay(clock, 200ms);
   icm_device.init_mag();
-  (void)hal::delay(clock, 100ms);
+  hal::delay(clock, 100ms);
+
   icm_device.auto_offsets();
 
   while (true) {
 
     auto accel = HAL_CHECK(icm_device.read_acceleration());
-    (void)hal::delay(clock, 10ms);
+    hal::delay(clock, 10ms);
     auto gyro = HAL_CHECK(icm_device.read_gyroscope());
-    (void)hal::delay(clock, 10ms);
+    hal::delay(clock, 10ms);
     auto temp = HAL_CHECK(icm_device.read_temperature());
-    (void)hal::delay(clock, 10ms);
+    hal::delay(clock, 10ms);
     auto mag = HAL_CHECK(icm_device.read_magnetometer());
-    (void)hal::delay(clock, 10ms);
+    hal::delay(clock, 10ms);
     hal::print(console, "\n\n================Reading IMU================\n");
 
     hal::print<128>(console,
@@ -81,7 +83,7 @@ hal::status application(hardware_map& p_map)
                     mag.y,
                     mag.z);
 
-    float heading = computeHeading(mag.x, mag.y, 0.0);
+    float heading = compute_heading(mag.x, mag.y, 0.0);
     hal::print<128>(console, "\n\nHeading: %f°", heading);
 
     hal::print(console, "\n\n===========================================\n");
