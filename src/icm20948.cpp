@@ -281,9 +281,9 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
     }
   }
 
-  static float last_mag_x = 0;
-  static float last_mag_y = 0;
-  static float last_mag_z = 0;
+  float last_mag_x = 0;
+  float last_mag_y = 0;
+  float last_mag_z = 0;
   const float alpha = 0.05;
 
   // Read Mag Data

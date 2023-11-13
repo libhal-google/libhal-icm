@@ -163,7 +163,11 @@ public:
     float temp;
   };
 
-  // TODO: Add units
+ /*
+  * Struct to define acceleration offsets. All units are in G's
+  * This struct can be instantiated and passed as a
+  *   parameter to icm20948::set_acceleration_offsets
+  */
   struct acceleration_offset_t
   {
     float xmin;
@@ -174,7 +178,11 @@ public:
     float zmax;
   };
 
-  // TODO: add units
+ /*
+  * Struct to define gyroscope offsets. All units are in G's
+  * This struct can be instantiated and passed as a
+  *   parameter to icm20948::set_gyro_offsets
+  */
   struct gyro_offset_t
   {
     float x_offset;
@@ -224,9 +232,13 @@ public:
   /**
    * @brief Set default gyroscope offsets
    *    All offset parameters are in 'g's
+   * d@param p_offset Offset value in meters, from -127 to 128
    */
   hal::status set_gyro_offsets(const gyro_offset_t& gyro_offsets);
 
+  /**
+   * @brief Read & return whoami register value
+   */
   hal::result<hal::byte> whoami();
 
   hal::status enable_acc(bool p_en_acc);
@@ -259,7 +271,9 @@ public:
   hal::status write_ak09916_register8(hal::byte p_reg, hal::byte p_val);
 
 private:
+  /* The I2C peripheral used for communication with the device. */
   hal::i2c* m_i2c;
+
   hal::byte m_current_bank;
   accel_read_t m_acc_offset_val;
   accel_read_t m_acc_corr_factor;
@@ -268,6 +282,10 @@ private:
   hal::byte m_gyro_range_factor;
   hal::byte m_reg_val;  // intermediate storage of register values
 
+  /**
+   * @brief private constructor for icm20948 objects
+   * @param p_i2c The I2C peripheral used for communication with the device.
+   */
   explicit icm20948(hal::i2c& p_i2c)
     : m_i2c(&p_i2c)
   {
