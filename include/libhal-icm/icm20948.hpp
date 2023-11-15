@@ -212,14 +212,14 @@ public:
   [[nodiscard]] hal::result<mag_read_t> read_magnetometer();
 
   /**
-   * @brief Applies a linear interpolation between raw_data and the last stored 
+   * @brief Applies a linear interpolation between raw_data and the last stored
    * filtered value.
-   * @param raw_data: mag_read_t result from the last call to 
+   * @param raw_data: mag_read_t result from the last call to
    * 'read_magnetometer'
    * @param alpha: float [0,1]: interpolation parameter
    */
   [[nodiscard]] hal::result<icm20948::mag_read_t> filter_magnetometer(
-    icm20948::mag_read_t raw_data, 
+    icm20948::mag_read_t raw_data,
     const float alpha);
 
   /**
