@@ -59,7 +59,9 @@ hal::status application(hardware_map& p_map)
     hal::delay(clock, 10ms);
     auto temp = HAL_CHECK(icm_device.read_temperature());
     hal::delay(clock, 10ms);
+    const float alpha = 0.05;
     auto mag = HAL_CHECK(icm_device.read_magnetometer());
+    auto mag_filtered = HAL_CHECK(icm_device.filter_magnetometer(mag, alpha));
     hal::delay(clock, 10ms);
     hal::print(console, "\n\n================Reading IMU================\n");
 
@@ -82,6 +84,12 @@ hal::status application(hardware_map& p_map)
                     mag.x,
                     mag.y,
                     mag.z);
+
+    hal::print<128>(console,
+                    "\n\nFiltered Magnetometer Values: x = %f, y = %f, z = %f",
+                    mag_filtered.x,
+                    mag_filtered.y,
+                    mag_filtered.z);
 
     float heading = compute_heading(mag.x, mag.y, 0.0);
     hal::print<128>(console, "\n\nHeading: %f°", heading);

@@ -83,7 +83,7 @@ public:
     dlpf_off
   };
 
-  enum gyro_avg_low_pwr : hal::byte
+  enum gyro_avg_low_power : hal::byte
   {
     gyro_avg_1,
     gyro_avg_2,
@@ -103,7 +103,7 @@ public:
     acc_range_16g
   };
 
-  enum acc_avg_low_pwr : hal::byte
+  enum acc_avg_low_power : hal::byte
   {
     acc_avg_4,
     acc_avg_8,
@@ -212,6 +212,13 @@ public:
   [[nodiscard]] hal::result<mag_read_t> read_magnetometer();
 
   /**
+   * @brief Applies a linear interpolation between raw_data and the last stored filtered value.
+   * @param raw_data: mag_read_t result from the last call to 'read_magnetometer'
+   * @param alpha: float [0,1]: interpolation parameter
+   */
+  [[nodiscard]] hal::result<icm20948::mag_read_t> filter_magnetometer(icm20948::mag_read_t raw_data, const float alpha);
+
+  /**
    * @brief Read pressure data from out_t_msb_r and out_t_lsb_r
    *        and perform temperature conversion to celsius.
    */
@@ -254,8 +261,8 @@ public:
   /* Power, Sleep, Standby */
   hal::status enable_cycle(cycle p_cycle);
   hal::status enable_low_power(bool p_enable_low_power);
-  hal::status set_gyro_averg_cycle_mode(gyro_avg_low_pwr p_avg);
-  hal::status set_acc_averg_cycle_mode(acc_avg_low_pwr p_avg);
+  hal::status set_gyro_averg_cycle_mode(gyro_avg_low_power p_avg);
+  hal::status set_acc_averg_cycle_mode(acc_avg_low_power p_avg);
   hal::status sleep(bool p_sleep);
 
   /* Magnetometer */
@@ -281,6 +288,9 @@ private:
   hal::byte m_acc_range_factor;
   hal::byte m_gyro_range_factor;
   hal::byte m_reg_val;  // intermediate storage of register values
+
+  // Store last mag data for interpolation filter
+  mag_read_t last_mag_data = {0, 0, 0};
 
   /**
    * @brief private constructor for icm20948 objects

@@ -11,12 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-#include "icm20948_reg.hpp"
 #include <array>
 #include <cmath>
+
 #include <libhal-icm/icm20948.hpp>
 #include <libhal-util/i2c.hpp>
+
+#include "icm20948_reg.hpp"
 
 namespace hal::icm {
 using namespace icm20948_reg;
@@ -258,6 +259,21 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   return gyro_read;
 }
 
+hal::result<icm20948::mag_read_t> icm20948::filter_magnetometer(icm20948::mag_read_t raw_data, const float alpha)
+{
+  mag_read_t filtered_mag;
+
+  filtered_mag.x = std::lerp(last_mag_data.x, raw_data.x, alpha);
+  filtered_mag.y = std::lerp(last_mag_data.y, raw_data.y, alpha);
+  filtered_mag.z = std::lerp(last_mag_data.z, raw_data.z, alpha);
+
+  last_mag_data.x = filtered_mag.x;
+  last_mag_data.y = filtered_mag.y;
+  last_mag_data.z = filtered_mag.z;
+
+  return filtered_mag;
+}
+
 hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
 {
   mag_read_t mag_read;
@@ -277,14 +293,9 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
     }
 
     if (++polling_attempts > max_polling_attempts) {
-      return hal::new_error();
+      return hal::new_error(std::errc::timed_out);
     }
   }
-
-  float last_mag_x = 0;
-  float last_mag_y = 0;
-  float last_mag_z = 0;
-  const float alpha = 0.05;
 
   // Read Mag Data
   auto data =
@@ -297,17 +308,9 @@ hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
   int16_t y = static_cast<int16_t>((data[3] << 8) | data[2]);
   int16_t z = static_cast<int16_t>((data[5] << 8) | data[4]);
 
-  float filtered_mag_x = (1 - alpha) * last_mag_x + alpha * (x * 0.05);
-  float filtered_mag_y = (1 - alpha) * last_mag_y + alpha * (y * 0.05);
-  float filtered_mag_z = (1 - alpha) * last_mag_z + alpha * (z * 0.05);
-
-  last_mag_x = filtered_mag_x;
-  last_mag_y = filtered_mag_y;
-  last_mag_z = filtered_mag_z;
-
-  mag_read.x = filtered_mag_x;
-  mag_read.y = filtered_mag_y;
-  mag_read.z = filtered_mag_z;
+  mag_read.x = x;
+  mag_read.y = y;
+  mag_read.z = z;
 
   HAL_CHECK(mag_status1());
   HAL_CHECK(mag_status2());
@@ -356,13 +359,13 @@ hal::status icm20948::enable_low_power(bool p_enable_low_power)
   return hal::success();
 }
 
-hal::status icm20948::set_gyro_averg_cycle_mode(gyro_avg_low_pwr p_avg)
+hal::status icm20948::set_gyro_averg_cycle_mode(gyro_avg_low_power p_avg)
 {
   HAL_CHECK(write_register8(2, gyro_config_2, p_avg));
   return hal::success();
 }
 
-hal::status icm20948::set_acc_averg_cycle_mode(acc_avg_low_pwr p_avg)
+hal::status icm20948::set_acc_averg_cycle_mode(acc_avg_low_power p_avg)
 {
   HAL_CHECK(write_register8(2, accel_config_2, p_avg));
   return hal::success();
