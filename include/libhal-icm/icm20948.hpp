@@ -240,7 +240,7 @@ public:
    * @param acc_offsets Acceleration offset struct.
    */
   hal::status set_acceleration_offsets(
-    const acceleration_offset_t& acc_offfsets);
+    const acceleration_offset_t& acc_offsets);
 
   /**
    * @brief Set default gyroscope offsets
