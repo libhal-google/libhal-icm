@@ -259,21 +259,6 @@ hal::result<icm20948::gyro_read_t> icm20948::read_gyroscope()
   return gyro_read;
 }
 
-hal::result<icm20948::mag_read_t> icm20948::filter_magnetometer(icm20948::mag_read_t raw_data, const float alpha)
-{
-  mag_read_t filtered_mag;
-
-  filtered_mag.x = std::lerp(last_mag_data.x, raw_data.x, alpha);
-  filtered_mag.y = std::lerp(last_mag_data.y, raw_data.y, alpha);
-  filtered_mag.z = std::lerp(last_mag_data.z, raw_data.z, alpha);
-
-  last_mag_data.x = filtered_mag.x;
-  last_mag_data.y = filtered_mag.y;
-  last_mag_data.z = filtered_mag.z;
-
-  return filtered_mag;
-}
-
 hal::result<icm20948::mag_read_t> icm20948::read_magnetometer()
 {
   mag_read_t mag_read;
