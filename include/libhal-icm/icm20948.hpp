@@ -163,11 +163,11 @@ public:
     float temp;
   };
 
- /*
-  * Struct to define acceleration offsets. All units are in G's
-  * This struct can be instantiated and passed as a
-  *   parameter to icm20948::set_acceleration_offsets
-  */
+  /*
+   * Struct to define acceleration offsets. All units are in G's
+   * This struct can be instantiated and passed as a
+   *   parameter to icm20948::set_acceleration_offsets
+   */
   struct acceleration_offset_t
   {
     float xmin;
@@ -178,11 +178,11 @@ public:
     float zmax;
   };
 
- /*
-  * Struct to define gyroscope offsets. All units are in G's
-  * This struct can be instantiated and passed as a
-  *   parameter to icm20948::set_gyro_offsets
-  */
+  /*
+   * Struct to define gyroscope offsets. All units are in G's
+   * This struct can be instantiated and passed as a
+   *   parameter to icm20948::set_gyro_offsets
+   */
   struct gyro_offset_t
   {
     float x_offset;
@@ -212,11 +212,15 @@ public:
   [[nodiscard]] hal::result<mag_read_t> read_magnetometer();
 
   /**
-   * @brief Applies a linear interpolation between raw_data and the last stored filtered value.
-   * @param raw_data: mag_read_t result from the last call to 'read_magnetometer'
+   * @brief Applies a linear interpolation between raw_data and the last stored 
+   * filtered value.
+   * @param raw_data: mag_read_t result from the last call to 
+   * 'read_magnetometer'
    * @param alpha: float [0,1]: interpolation parameter
    */
-  [[nodiscard]] hal::result<icm20948::mag_read_t> filter_magnetometer(icm20948::mag_read_t raw_data, const float alpha);
+  [[nodiscard]] hal::result<icm20948::mag_read_t> filter_magnetometer(
+    icm20948::mag_read_t raw_data, 
+    const float alpha);
 
   /**
    * @brief Read pressure data from out_t_msb_r and out_t_lsb_r
@@ -234,7 +238,8 @@ public:
    * @brief Set default acceleration offsets
    *    All offset parameters are in 'g's
    */
-  hal::status set_acceleration_offsets(const acceleration_offset_t& acc_offfsets);
+  hal::status set_acceleration_offsets(
+    const acceleration_offset_t& acc_offfsets);
 
   /**
    * @brief Set default gyroscope offsets
@@ -290,7 +295,7 @@ private:
   hal::byte m_reg_val;  // intermediate storage of register values
 
   // Store last mag data for interpolation filter
-  mag_read_t last_mag_data = {0, 0, 0};
+  mag_read_t last_mag_data = { 0, 0, 0 };
 
   /**
    * @brief private constructor for icm20948 objects
