@@ -179,7 +179,7 @@ public:
   };
 
   /*
-   * Struct to define gyroscope offsets. All units are in G's
+   * Struct to define gyroscope offsets. All units are in degrees/second
    * This struct can be instantiated and passed as a
    *   parameter to icm20948::set_gyro_offsets
    */
@@ -237,14 +237,15 @@ public:
   /**
    * @brief Set default acceleration offsets
    *    All offset parameters are in 'g's
+   * @param acc_offsets Acceleration offset struct.
    */
   hal::status set_acceleration_offsets(
     const acceleration_offset_t& acc_offfsets);
 
   /**
    * @brief Set default gyroscope offsets
-   *    All offset parameters are in 'g's
-   * d@param p_offset Offset value in meters, from -127 to 128
+   *    All offset parameters are in degrees/second
+   * @param gyro_offsets Gyro offset struct.
    */
   hal::status set_gyro_offsets(const gyro_offset_t& gyro_offsets);
 
